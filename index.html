@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dasbor Performa Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#F2F2ED;
+    --surface:#FFFFFF;
+    --surface-soft:#FAFAF6;
+    --ink:#14171C;
+    --ink-soft:#565A61;
+    --line:#DEDCD3;
+    --accent:#B0245B;
+    --accent-soft:#F3DCE6;
+    --positive:#14746A;
+    --positive-soft:#DCEBE8;
+    --warn:#B9761F;
+    --warn-soft:#F3E6D2;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:inherit;}
+
+  /* Header & nav */
+  header.top{
+    position:sticky; top:0; z-index:50;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+  }
+  .top-inner{
+    max-width:1080px; margin:0 auto; padding:18px 24px 0 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:8px;
+    background:var(--ink); color:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; font-weight:700; font-size:16px;
+  }
+  .brand-text h1{font-size:17px;}
+  .brand-text span{font-size:12.5px; color:var(--ink-soft);}
+
+  nav.tabs{
+    max-width:1080px; margin:0 auto; padding:0 24px;
+    display:flex; gap:4px; overflow-x:auto;
+  }
+  nav.tabs button{
+    appearance:none; border:none; background:none; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif; font-size:14.5px; font-weight:500;
+    color:var(--ink-soft);
+    padding:12px 14px 13px 14px;
+    border-bottom:2px solid transparent;
+    white-space:nowrap;
+  }
+  nav.tabs button.active{
+    color:var(--ink);
+    border-bottom-color:var(--accent);
+  }
+
+  main{max-width:1080px; margin:0 auto; padding:36px 24px 80px 24px;}
+  section{display:none;}
+  section.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .section-head{margin-bottom:28px; max-width:640px;}
+  .section-head h2{font-size:26px; margin-bottom:6px;}
+  .section-head p{color:var(--ink-soft); font-size:14.5px; margin:0;}
+
+  /* Hero stat */
+  .hero{
+    display:flex; flex-wrap:wrap; gap:36px; align-items:flex-end;
+    padding-bottom:28px; margin-bottom:28px; border-bottom:1px solid var(--line);
+  }
+  .hero-figure .label{font-size:13.5px; color:var(--ink-soft); margin-bottom:6px;}
+  .hero-figure .value{font-family:'Fraunces', serif; font-size:56px; font-weight:600; line-height:1;}
+  .hero-figure .delta{margin-top:8px; font-size:13.5px;}
+  .delta.up{color:var(--positive);}
+  .delta.down{color:var(--warn);}
+  .hero-chart{flex:1; min-width:220px; max-width:340px; height:90px;}
+
+  /* Cards grid */
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:1px; background:var(--line);
+    border:1px solid var(--line);
+    margin-bottom:32px;
+  }
+  .card{
+    background:var(--surface-soft); padding:18px 18px 16px 18px;
+  }
+  .card .label{font-size:13px; color:var(--ink-soft); margin-bottom:8px;}
+  .card .value{font-family:'IBM Plex Mono', monospace; font-size:24px; font-weight:600;}
+  .card .sub{font-size:12.5px; color:var(--ink-soft); margin-top:4px;}
+  .tag{
+    display:inline-block; font-size:11.5px; padding:2px 8px; border-radius:3px;
+    margin-top:8px;
+  }
+  .tag.good{background:var(--positive-soft); color:var(--positive);}
+  .tag.watch{background:var(--warn-soft); color:var(--warn);}
+
+  .two-col{display:grid; grid-template-columns:1.2fr 1fr; gap:28px; margin-bottom:32px;}
+  @media (max-width:720px){.two-col{grid-template-columns:1fr;}}
+  .panel{
+    background:var(--surface-soft); border:1px solid var(--line); padding:20px;
+  }
+  .panel h3{font-size:15.5px; margin-bottom:2px;}
+  .panel .panel-sub{font-size:13px; color:var(--ink-soft); margin-bottom:16px;}
+  .chart-box{position:relative; height:240px;}
+  .chart-box.tall{height:300px;}
+
+  /* Table */
+  .table-wrap{
+    overflow-x:auto; border:1px solid var(--line); background:var(--surface-soft);
+  }
+  table{width:100%; border-collapse:collapse; font-size:13.5px; min-width:760px;}
+  thead th{
+    text-align:left; font-weight:500; color:var(--ink-soft);
+    padding:10px 14px; border-bottom:1px solid var(--line);
+    cursor:pointer; user-select:none; white-space:nowrap;
+  }
+  thead th:hover{color:var(--ink);}
+  thead th.sorted::after{content:' ▾'; font-size:10px;}
+  tbody td{padding:9px 14px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody td.num{font-family:'IBM Plex Mono', monospace;}
+
+  .filters{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;}
+  .filters button{
+    appearance:none; border:1px solid var(--line); background:var(--surface);
+    padding:7px 14px; font-size:13px; font-family:'IBM Plex Sans', sans-serif;
+    cursor:pointer; border-radius:3px; color:var(--ink-soft);
+  }
+  .filters button.active{background:var(--ink); color:var(--bg); border-color:var(--ink);}
+  .filters input{
+    border:1px solid var(--line); background:var(--surface); padding:7px 12px;
+    font-size:13px; font-family:'IBM Plex Sans', sans-serif; border-radius:3px;
+    flex:1; min-width:160px; max-width:260px;
+  }
+
+  /* Insight list */
+  .insight-list{display:grid; gap:1px; background:var(--line); border:1px solid var(--line); margin-bottom:32px;}
+  .insight{background:var(--surface-soft); padding:18px 20px; display:flex; gap:16px;}
+  .insight .mark{
+    font-family:'Fraunces', serif; font-size:20px; color:var(--accent); flex-shrink:0; width:20px;
+  }
+  .insight h4{font-size:14.5px; font-weight:600; margin-bottom:4px; font-family:'IBM Plex Sans', sans-serif;}
+  .insight p{font-size:13.5px; color:var(--ink-soft); margin:0;}
+
+  .note{
+    font-size:12.5px; color:var(--ink-soft); background:var(--accent-soft);
+    border:1px solid var(--line); padding:12px 16px; margin-bottom:28px;
+  }
+  footer{
+    max-width:1080px; margin:0 auto; padding:24px; color:var(--ink-soft);
+    font-size:12.5px; border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="brand-mark">IG</div>
+      <div class="brand-text">
+        <h1>Dasbor Performa Instagram</h1>
+        <span>@namaakunkamu · 8 minggu terakhir</span>
+      </div>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button data-target="ringkasan" class="active">Ringkasan</button>
+    <button data-target="format">Format</button>
+    <button data-target="tren">Tren</button>
+    <button data-target="konten">Konten</button>
+    <button data-target="insight">Insight</button>
+  </nav>
+</header>
+
+<main>
+
+  <div class="note">Semua angka di halaman ini adalah <strong>data contoh</strong>. Ganti array <span class="mono">posts</span> di bagian akhir file ini dengan data asli dari Instagram Insights akunmu.</div>
+
+  <!-- RINGKASAN -->
+  <section id="ringkasan" class="active">
+    <div class="section-head">
+      <h2>Ringkasan performa</h2>
+      <p>Rangkuman seluruh konten yang diposting dalam 8 minggu terakhir.</p>
+    </div>
+
+    <div class="hero">
+      <div class="hero-figure">
+        <div class="label">Total reach — 8 minggu</div>
+        <div class="value mono" id="heroReach">–</div>
+        <div class="delta up" id="heroDelta">–</div>
+      </div>
+      <div class="hero-chart"><canvas id="sparkline"></canvas></div>
+    </div>
+
+    <div class="grid" id="summaryCards"></div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h3>Reach mingguan</h3>
+        <div class="panel-sub">Total reach dari seluruh post per minggu.</div>
+        <div class="chart-box"><canvas id="weeklyReachChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Komposisi format</h3>
+        <div class="panel-sub">Jumlah konten berdasarkan jenis post.</div>
+        <div class="chart-box"><canvas id="formatMixChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMAT -->
+  <section id="format">
+    <div class="section-head">
+      <h2>Feed vs Carousel vs Reels vs Story</h2>
+      <p>Format mana yang paling efektif untuk reach dan engagement.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h3>Rata-rata reach per format</h3>
+        <div class="panel-sub">Semakin tinggi bar, semakin banyak akun yang menjangkau format itu.</div>
+        <div class="chart-box"><canvas id="formatReachChart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Rata-rata engagement rate per format</h3>
+        <div class="panel-sub">Target internal: 3% dari reach.</div>
+        <div class="chart-box"><canvas id="formatERChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:32px;">
+      <h3>Detail per format</h3>
+      <div class="panel-sub">Ringkasan seluruh metrik, dikelompokkan per jenis konten.</div>
+      <div class="table-wrap">
+        <table id="formatTable">
+          <thead><tr>
+            <th>Format</th><th>Jumlah konten</th><th>Total reach</th><th>Avg reach</th><th>Avg ER</th><th>Avg saves</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TREN -->
+  <section id="tren">
+    <div class="section-head">
+      <h2>Tren dari waktu ke waktu</h2>
+      <p>Perkembangan reach, engagement rate, dan follower selama 8 minggu.</p>
+    </div>
+
+    <div class="panel" style="margin-bottom:28px;">
+      <h3>Reach & engagement rate mingguan</h3>
+      <div class="panel-sub">Garis putus-putus menandakan target ER (3%).</div>
+      <div class="chart-box tall"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <h3>Pertumbuhan follower</h3>
+      <div class="panel-sub">Total follower akun di akhir tiap minggu.</div>
+      <div class="chart-box"><canvas id="followerChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- KONTEN -->
+  <section id="konten">
+    <div class="section-head">
+      <h2>Detail konten</h2>
+      <p id="kontenCount">– konten — filter per format atau cari topik.</p>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-format="all">Semua format</button>
+      <button class="filter-btn" data-format="Feed">Feed</button>
+      <button class="filter-btn" data-format="Carousel">Carousel</button>
+      <button class="filter-btn" data-format="Reels">Reels</button>
+      <button class="filter-btn" data-format="Story">Story</button>
+      <input type="text" id="searchInput" placeholder="Cari topik konten…">
+    </div>
+
+    <div class="table-wrap">
+      <table id="contentTable">
+        <thead><tr>
+          <th data-key="date">Tanggal</th>
+          <th data-key="format">Format</th>
+          <th data-key="topic">Topik</th>
+          <th data-key="reach" class="num">Reach</th>
+          <th data-key="likes" class="num">Likes</th>
+          <th data-key="comments" class="num">Komentar</th>
+          <th data-key="saves" class="num">Saves</th>
+          <th data-key="er" class="num">ER</th>
+          <th data-key="category">Kategori</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- INSIGHT -->
+  <section id="insight">
+    <div class="section-head">
+      <h2>Insight & rekomendasi</h2>
+      <p>Kesimpulan dari data 8 minggu terakhir untuk konten bulan depan.</p>
+    </div>
+
+    <div class="insight-list">
+      <div class="insight">
+        <div class="mark">1</div>
+        <div><h4>Reels konsisten paling unggul</h4><p>Reels mencatat rata-rata reach dan engagement rate tertinggi dibanding format lain — pertahankan frekuensi posting Reels di 2-3x per minggu.</p></div>
+      </div>
+      <div class="insight">
+        <div class="mark">2</div>
+        <div><h4>Carousel efektif untuk saves</h4><p>Konten carousel edukatif mengumpulkan rasio saves yang lebih tinggi, menandakan value untuk disimpan dan dibaca ulang audiens.</p></div>
+      </div>
+      <div class="insight">
+        <div class="mark">3</div>
+        <div><h4>Story kurang mendorong engagement terukur</h4><p>Story cocok untuk menjaga kedekatan harian, tapi kontribusinya ke ER keseluruhan kecil — jangan jadi andalan target reach.</p></div>
+      </div>
+      <div class="insight">
+        <div class="mark">4</div>
+        <div><h4>Follower tumbuh stabil, bukan lonjakan</h4><p>Pertumbuhan follower cenderung linear mengikuti konsistensi posting, bukan dari satu konten viral tunggal.</p></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Dasbor Performa Instagram · data contoh untuk keperluan evaluasi akun pribadi</footer>
+
+<script>
+/* ================= DATA CONTOH — ganti dengan data akun Instagram-mu ================= */
+const posts = [
+  {date:"2026-07-20", format:"Reels",    topic:"Tips baca cepat",        reach:9800, likes:610, comments:48, shares:85, saves:210},
+  {date:"2026-07-21", format:"Carousel", topic:"5 rekomendasi buku",     reach:4200, likes:260, comments:22, shares:30, saves:180},
+  {date:"2026-07-22", format:"Story",    topic:"Polling followers",      reach:1400, likes:60,  comments:5,  shares:2,  saves:4},
+  {date:"2026-07-24", format:"Feed",     topic:"Foto produk baru",       reach:2100, likes:140, comments:9,  shares:6,  saves:20},
+  {date:"2026-07-26", format:"Reels",    topic:"Behind the scenes",      reach:11200,likes:820, comments:60, shares:120,saves:250},
+  {date:"2026-07-28", format:"Carousel", topic:"Cara memilih genre",     reach:3600, likes:210, comments:18, shares:24, saves:150},
+  {date:"2026-07-30", format:"Reels",    topic:"Q&A pembaca",            reach:7600, likes:520, comments:70, shares:64, saves:130},
+  {date:"2026-08-02", format:"Story",    topic:"Behind the scenes",      reach:1200, likes:45,  comments:3,  shares:1,  saves:2},
+  {date:"2026-08-03", format:"Feed",     topic:"Testimoni pelanggan",    reach:1900, likes:120, comments:11, shares:5,  saves:15},
+  {date:"2026-08-05", format:"Carousel", topic:"Infografis genre populer",reach:5100,likes:340, comments:25, shares:40, saves:220},
+  {date:"2026-08-07", format:"Reels",    topic:"Unboxing paket buku",     reach:10400,likes:740, comments:55, shares:98, saves:190},
+  {date:"2026-08-09", format:"Reels",    topic:"Tips baca cepat #2",      reach:8900, likes:600, comments:52, shares:88, saves:200},
+  {date:"2026-08-11", format:"Carousel", topic:"Rekomendasi bulan ini",   reach:3900, likes:230, comments:19, shares:28, saves:160},
+  {date:"2026-08-12", format:"Story",    topic:"Giveaway pengumuman",     reach:2200, likes:90,  comments:8,  shares:6,  saves:5},
+  {date:"2026-08-14", format:"Feed",     topic:"Meme relatable pembaca",  reach:2600, likes:210, comments:16, shares:22, saves:18},
+  {date:"2026-08-16", format:"Reels",    topic:"Review buku terlaris",    reach:12500,likes:910, comments:78, shares:140,saves:280},
+  {date:"2026-08-18", format:"Carousel", topic:"Cara merawat buku",       reach:4400, likes:270, comments:20, shares:32, saves:190},
+  {date:"2026-08-20", format:"Reels",    topic:"Tutorial reading tracker",reach:9300, likes:640, comments:58, shares:95, saves:220},
+  {date:"2026-08-22", format:"Story",    topic:"Q&A singkat",             reach:1300, likes:50,  comments:4,  shares:1,  saves:3},
+  {date:"2026-08-24", format:"Feed",     topic:"Foto koleksi buku",       reach:2000, likes:130, comments:10, shares:7,  saves:16},
+  {date:"2026-08-26", format:"Carousel", topic:"5 alasan suka membaca",   reach:4700, likes:300, comments:23, shares:35, saves:200},
+  {date:"2026-08-28", format:"Reels",    topic:"Rekap bulanan",           reach:10800,likes:780, comments:64, shares:110,saves:240},
+  {date:"2026-08-30", format:"Reels",    topic:"Tips membangun habit baca",reach:9600,likes:660, comments:50, shares:90, saves:210},
+  {date:"2026-09-01", format:"Carousel", topic:"Perbandingan e-book vs fisik",reach:4100,likes:250, comments:21, shares:26, saves:170},
+];
+
+const followerGrowth = [
+  {week:"Minggu 1", followers:8200},
+  {week:"Minggu 2", followers:8340},
+  {week:"Minggu 3", followers:8510},
+  {week:"Minggu 4", followers:8690},
+  {week:"Minggu 5", followers:8900},
+  {week:"Minggu 6", followers:9120},
+  {week:"Minggu 7", followers:9380},
+  {week:"Minggu 8", followers:9640},
+];
+
+const TARGET_ER = 3; // persen
+const formatOrder = ["Reels","Carousel","Feed","Story"];
+const colors = {
+  Reels:"#B0245B", Carousel:"#14746A", Feed:"#B9761F", Story:"#8A8D93"
+};
+
+/* ============ olah data ============ */
+posts.forEach(p=>{
+  p.engagement = p.likes + p.comments + p.shares + p.saves;
+  p.er = +(p.engagement / p.reach * 100).toFixed(2);
+  p.category = p.er >= TARGET_ER ? "Di atas target" : "Perlu ditingkatkan";
+});
+
+function fmt(n){ return n.toLocaleString('id-ID'); }
+
+/* ---- hero ---- */
+const totalReach = posts.reduce((s,p)=>s+p.reach,0);
+document.getElementById('heroReach').textContent = fmt(totalReach);
+document.getElementById('heroDelta').textContent = "▲ 18% dibanding 8 minggu sebelumnya";
+
+/* ---- ringkasan cards ---- */
+const totalEngagement = posts.reduce((s,p)=>s+p.engagement,0);
+const avgER = +(posts.reduce((s,p)=>s+p.er,0)/posts.length).toFixed(2);
+const followerStart = followerGrowth[0].followers, followerEnd = followerGrowth[followerGrowth.length-1].followers;
+const followerGrowthPct = (((followerEnd-followerStart)/followerStart)*100).toFixed(1);
+const aboveTarget = posts.filter(p=>p.er>=TARGET_ER).length;
+
+const summaryCards = [
+  {label:"Total konten", value:posts.length, sub:"selama 8 minggu"},
+  {label:"Total engagement", value:fmt(totalEngagement), sub:"like + komentar + share + save"},
+  {label:"Rata-rata ER", value:avgER+"%", sub:"Target: "+TARGET_ER+"%", tag: avgER>=TARGET_ER?"good":"watch"},
+  {label:"Pertumbuhan follower", value:"+"+followerGrowthPct+"%", sub:fmt(followerStart)+" → "+fmt(followerEnd)},
+  {label:"Konten di atas target", value:aboveTarget+"/"+posts.length, sub:"proporsi ER ≥ "+TARGET_ER+"%"},
+];
+document.getElementById('summaryCards').innerHTML = summaryCards.map(c=>`
+  <div class="card">
+    <div class="label">${c.label}</div>
+    <div class="value">${c.value}</div>
+    <div class="sub">${c.sub}</div>
+    ${c.tag ? `<span class="tag ${c.tag}">${c.tag==='good'?'Sesuai target':'Perlu perhatian'}</span>` : ''}
+  </div>
+`).join('');
+
+/* ---- weekly aggregation ---- */
+function weekIndex(dateStr){
+  const d = new Date(dateStr);
+  const start = new Date(posts[0].date);
+  return Math.floor((d-start)/(7*24*3600*1000));
+}
+const weeks = Array.from({length:8}, (_,i)=>`Minggu ${i+1}`);
+const weeklyReach = Array(8).fill(0);
+const weeklyER = Array(8).fill(0);
+const weeklyCount = Array(8).fill(0);
+posts.forEach(p=>{
+  const w = Math.min(weekIndex(p.date),7);
+  weeklyReach[w]+=p.reach;
+  weeklyER[w]+=p.er;
+  weeklyCount[w]+=1;
+});
+const weeklyAvgER = weeklyER.map((v,i)=> weeklyCount[i] ? +(v/weeklyCount[i]).toFixed(2) : 0);
+
+/* ---- format aggregation ---- */
+const byFormat = {};
+formatOrder.forEach(f=>byFormat[f]={count:0, reach:0, er:0, saves:0});
+posts.forEach(p=>{
+  byFormat[p.format].count++;
+  byFormat[p.format].reach+=p.reach;
+  byFormat[p.format].er+=p.er;
+  byFormat[p.format].saves+=p.saves;
+});
+formatOrder.forEach(f=>{
+  const b = byFormat[f];
+  b.avgReach = b.count ? Math.round(b.reach/b.count) : 0;
+  b.avgER = b.count ? +(b.er/b.count).toFixed(2) : 0;
+  b.avgSaves = b.count ? Math.round(b.saves/b.count) : 0;
+});
+
+document.querySelector('#formatTable tbody').innerHTML = formatOrder.map(f=>{
+  const b = byFormat[f];
+  return `<tr>
+    <td>${f}</td><td class="num">${b.count}</td><td class="num">${fmt(b.reach)}</td>
+    <td class="num">${fmt(b.avgReach)}</td><td class="num">${b.avgER}%</td><td class="num">${fmt(b.avgSaves)}</td>
+  </tr>`;
+}).join('');
+
+/* ================= CHARTS ================= */
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+Chart.defaults.color = "#565A61";
+Chart.defaults.borderColor = "#DEDCD3";
+
+new Chart(document.getElementById('sparkline'), {
+  type:'line',
+  data:{ labels:weeks, datasets:[{ data:weeklyReach, borderColor:'#B0245B', backgroundColor:'rgba(176,36,91,0.08)', fill:true, tension:.35, pointRadius:0, borderWidth:2 }]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}} }
+});
+
+new Chart(document.getElementById('weeklyReachChart'), {
+  type:'bar',
+  data:{ labels:weeks, datasets:[{ label:'Reach', data:weeklyReach, backgroundColor:'#B0245B', borderRadius:2 }]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'#EAE8E1'} }, x:{ grid:{display:false} } } }
+});
+
+new Chart(document.getElementById('formatMixChart'), {
+  type:'doughnut',
+  data:{ labels:formatOrder, datasets:[{ data:formatOrder.map(f=>byFormat[f].count), backgroundColor:formatOrder.map(f=>colors[f]), borderWidth:2, borderColor:'#FAFAF6' }]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10, padding:14}}} }
+});
+
+new Chart(document.getElementById('formatReachChart'), {
+  type:'bar',
+  data:{ labels:formatOrder, datasets:[{ data:formatOrder.map(f=>byFormat[f].avgReach), backgroundColor:formatOrder.map(f=>colors[f]), borderRadius:2 }]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'#EAE8E1'} }, x:{ grid:{display:false} } } }
+});
+
+new Chart(document.getElementById('formatERChart'), {
+  type:'bar',
+  data:{ labels:formatOrder, datasets:[{ data:formatOrder.map(f=>byFormat[f].avgER), backgroundColor:formatOrder.map(f=>colors[f]), borderRadius:2 }]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+    scales:{ y:{ grid:{color:'#EAE8E1'}, title:{display:true, text:'%'} }, x:{ grid:{display:false} } } }
+});
+
+new Chart(document.getElementById('trendChart'), {
+  type:'line',
+  data:{ labels:weeks, datasets:[
+    { label:'Reach', data:weeklyReach, borderColor:'#B0245B', backgroundColor:'rgba(176,36,91,0.08)', yAxisID:'y', tension:.3, fill:true },
+    { label:'Engagement rate (%)', data:weeklyAvgER, borderColor:'#14746A', backgroundColor:'transparent', yAxisID:'y1', tension:.3 },
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'bottom', labels:{boxWidth:10, padding:14}} },
+    scales:{
+      y:{ position:'left', grid:{color:'#EAE8E1'}, title:{display:true, text:'Reach'} },
+      y1:{ position:'right', grid:{display:false}, title:{display:true, text:'ER (%)'} },
+    }
+  }
+});
+
+new Chart(document.getElementById('followerChart'), {
+  type:'line',
+  data:{ labels:followerGrowth.map(f=>f.week), datasets:[{ data:followerGrowth.map(f=>f.followers), borderColor:'#14171C', backgroundColor:'rgba(20,23,28,0.05)', fill:true, tension:.3, pointRadius:3 }]},
+  options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'#EAE8E1'} }, x:{ grid:{display:false} } } }
+});
+
+/* ================= TABEL KONTEN ================= */
+let currentFormat = 'all';
+let currentSearch = '';
+let sortKey = 'date';
+let sortDir = -1;
+
+function renderContentTable(){
+  let rows = posts.filter(p=>{
+    const matchFormat = currentFormat==='all' || p.format===currentFormat;
+    const matchSearch = p.topic.toLowerCase().includes(currentSearch.toLowerCase());
+    return matchFormat && matchSearch;
+  });
+  rows.sort((a,b)=>{
+    let av=a[sortKey], bv=b[sortKey];
+    if(typeof av==='string'){ return sortDir * av.localeCompare(bv); }
+    return sortDir * (av-bv);
+  });
+  document.getElementById('kontenCount').textContent = `${rows.length} dari ${posts.length} konten — filter per format atau cari topik.`;
+  document.querySelector('#contentTable tbody').innerHTML = rows.map(p=>`
+    <tr>
+      <td>${new Date(p.date).toLocaleDateString('id-ID',{day:'2-digit',month:'short'})}</td>
+      <td>${p.format}</td>
+      <td>${p.topic}</td>
+      <td class="num">${fmt(p.reach)}</td>
+      <td class="num">${fmt(p.likes)}</td>
+      <td class="num">${fmt(p.comments)}</td>
+      <td class="num">${fmt(p.saves)}</td>
+      <td class="num">${p.er}%</td>
+      <td><span class="tag ${p.category==='Di atas target'?'good':'watch'}">${p.category}</span></td>
+    </tr>
+  `).join('');
+}
+renderContentTable();
+
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFormat = btn.dataset.format;
+    renderContentTable();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', e=>{
+  currentSearch = e.target.value;
+  renderContentTable();
+});
+document.querySelectorAll('#contentTable thead th').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const key = th.dataset.key;
+    if(sortKey===key){ sortDir *= -1; } else { sortKey = key; sortDir = 1; }
+    document.querySelectorAll('#contentTable thead th').forEach(t=>t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    renderContentTable();
+  });
+});
+
+/* ================= NAV TABS ================= */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
